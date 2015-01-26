@@ -50,7 +50,7 @@ private:
 			const char *value);
 	void SaveComboData(QComboBox *widget, const char *section,
 			const char *value);
-	void SaveCheckBox(QCheckBox *widget, const char *section,
+	void SaveCheckBox(QAbstractButton *widget, const char *section,
 			const char *value);
 	void SaveEdit(QLineEdit *widget, const char *section,
 			const char *value);
@@ -95,6 +95,10 @@ private:
 
 	/* output */
 	void LoadSimpleOutputSettings();
+	void LoadAdvOutputStreamingSettings();
+	void LoadAdvOutputRecordingSettings();
+	void LoadAdvOutputFFmpegSettings();
+	void LoadAdvOutputAudioSettings();
 
 	/* audio */
 	void LoadListValues(QComboBox *widget, obs_property_t *prop,
@@ -115,11 +119,20 @@ private:
 	void SaveSettings();
 
 private slots:
+	void on_simpleOutUseBufsize_toggled(bool checked);
+	void on_advOutUseBufsize_toggled(bool checked);
+	void on_advOutRecUseBufsize_toggled(bool checked);
+	void on_simpleOutputVBitrate_valueChanged(int val);
+	void on_advOutVBitrate_valueChanged(int val);
+	void on_advOutRecVBitrate_valueChanged(int val);
+
 	void on_listWidget_itemSelectionChanged();
 	void on_buttonBox_clicked(QAbstractButton *button);
 
 	void on_streamType_currentIndexChanged(int idx);
 	void on_simpleOutputBrowse_clicked();
+	void on_advOutRecPathBrowse_clicked();
+	void on_advOutFFPathBrowse_clicked();
 
 	void on_baseResolution_editTextChanged(const QString &text);
 

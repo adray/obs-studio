@@ -149,6 +149,53 @@ OBSBasicSettings::OBSBasicSettings(QWidget *parent)
 	HookWidget(ui->simpleOutUseCBR,      CHECK_CHANGED,  OUTPUTS_CHANGED);
 	HookWidget(ui->simpleOutPreset,      COMBO_CHANGED,  OUTPUTS_CHANGED);
 	HookWidget(ui->simpleOutCustom,      EDIT_CHANGED,   OUTPUTS_CHANGED);
+	HookWidget(ui->advOutVBitrate,       SCROLL_CHANGED, OUTPUTS_CHANGED);
+	HookWidget(ui->advOutUseBufsize,     CHECK_CHANGED,  OUTPUTS_CHANGED);
+	HookWidget(ui->advOutVBufsize,       SCROLL_CHANGED, OUTPUTS_CHANGED);
+	HookWidget(ui->advOutReconnect,      CHECK_CHANGED,  OUTPUTS_CHANGED);
+	HookWidget(ui->advOutRetryDelay,     SCROLL_CHANGED, OUTPUTS_CHANGED);
+	HookWidget(ui->advOutMaxRetries,     SCROLL_CHANGED, OUTPUTS_CHANGED);
+	HookWidget(ui->advOutUseCBR,         CHECK_CHANGED,  OUTPUTS_CHANGED);
+	HookWidget(ui->advOutPreset,         COMBO_CHANGED,  OUTPUTS_CHANGED);
+	HookWidget(ui->advOutVCfg,           EDIT_CHANGED,   OUTPUTS_CHANGED);
+	HookWidget(ui->advOutUseRescale,     CHECK_CHANGED,  OUTPUTS_CHANGED);
+	HookWidget(ui->advOutRescale,        CBEDIT_CHANGED, OUTPUTS_CHANGED);
+	HookWidget(ui->advOutSingleTrack,    CHECK_CHANGED,  OUTPUTS_CHANGED);
+	HookWidget(ui->advOutAudioTrack,     SCROLL_CHANGED, OUTPUTS_CHANGED);
+	HookWidget(ui->advOutMultitrack,     CHECK_CHANGED,  OUTPUTS_CHANGED);
+	HookWidget(ui->advOutTrackCount,     SCROLL_CHANGED, OUTPUTS_CHANGED);
+	HookWidget(ui->advOutRecType,        COMBO_CHANGED,  OUTPUTS_CHANGED);
+	HookWidget(ui->advOutRecPath,        EDIT_CHANGED,   OUTPUTS_CHANGED);
+	HookWidget(ui->advOutRecStreamEnc,   CHECK_CHANGED,  OUTPUTS_CHANGED);
+	HookWidget(ui->advOutRecVBitrate,    SCROLL_CHANGED, OUTPUTS_CHANGED);
+	HookWidget(ui->advOutRecUseBufsize,  CHECK_CHANGED,  OUTPUTS_CHANGED);
+	HookWidget(ui->advOutRecBufsize,     SCROLL_CHANGED, OUTPUTS_CHANGED);
+	HookWidget(ui->advOutRecUseCBR,      CHECK_CHANGED,  OUTPUTS_CHANGED);
+	HookWidget(ui->advOutRecPreset,      COMBO_CHANGED,  OUTPUTS_CHANGED);
+	HookWidget(ui->advOutRecVCfg,        EDIT_CHANGED,   OUTPUTS_CHANGED);
+	HookWidget(ui->advOutRecUseRescale,  CHECK_CHANGED,  OUTPUTS_CHANGED);
+	HookWidget(ui->advOutRecRescale,     CBEDIT_CHANGED, OUTPUTS_CHANGED);
+	HookWidget(ui->advOutRecSingleTrack, CHECK_CHANGED,  OUTPUTS_CHANGED);
+	HookWidget(ui->advOutRecAudioTrack,  SCROLL_CHANGED, OUTPUTS_CHANGED);
+	HookWidget(ui->advOutRecMultitrack,  CHECK_CHANGED,  OUTPUTS_CHANGED);
+	HookWidget(ui->advOutRecTrackCount,  SCROLL_CHANGED, OUTPUTS_CHANGED);
+	HookWidget(ui->advOutFFURL,          EDIT_CHANGED,   OUTPUTS_CHANGED);
+	HookWidget(ui->advOutFFVBitrate,     SCROLL_CHANGED, OUTPUTS_CHANGED);
+	HookWidget(ui->advOutFFUseRescale,   CHECK_CHANGED,  OUTPUTS_CHANGED);
+	HookWidget(ui->advOutFFRescale,      CBEDIT_CHANGED, OUTPUTS_CHANGED);
+	HookWidget(ui->advOutFFVEncoder,     EDIT_CHANGED,   OUTPUTS_CHANGED);
+	HookWidget(ui->advOutFFVCfg,         EDIT_CHANGED,   OUTPUTS_CHANGED);
+	HookWidget(ui->advOutFFABitrate,     SCROLL_CHANGED, OUTPUTS_CHANGED);
+	HookWidget(ui->advOutFFAudioTrack,   SCROLL_CHANGED, OUTPUTS_CHANGED);
+	HookWidget(ui->advOutFFAEncoder,     EDIT_CHANGED,   OUTPUTS_CHANGED);
+	HookWidget(ui->advOutFFACfg,         EDIT_CHANGED,   OUTPUTS_CHANGED);
+	HookWidget(ui->advOutTrack1Bitrate,  COMBO_CHANGED,  OUTPUTS_CHANGED);
+	HookWidget(ui->advOutTrack2Bitrate,  COMBO_CHANGED,  OUTPUTS_CHANGED);
+	HookWidget(ui->advOutTrack2Name,     EDIT_CHANGED,   OUTPUTS_CHANGED);
+	HookWidget(ui->advOutTrack3Bitrate,  COMBO_CHANGED,  OUTPUTS_CHANGED);
+	HookWidget(ui->advOutTrack3Name,     EDIT_CHANGED,   OUTPUTS_CHANGED);
+	HookWidget(ui->advOutTrack4Bitrate,  COMBO_CHANGED,  OUTPUTS_CHANGED);
+	HookWidget(ui->advOutTrack4Name,     EDIT_CHANGED,   OUTPUTS_CHANGED);
 	HookWidget(ui->channelSetup,         COMBO_CHANGED,  AUDIO_RESTART);
 	HookWidget(ui->sampleRate,           COMBO_CHANGED,  AUDIO_RESTART);
 	HookWidget(ui->desktopAudioDevice1,  COMBO_CHANGED,  AUDIO_CHANGED);
@@ -194,8 +241,8 @@ void OBSBasicSettings::SaveComboData(QComboBox *widget, const char *section,
 	}
 }
 
-void OBSBasicSettings::SaveCheckBox(QCheckBox *widget, const char *section,
-		const char *value)
+void OBSBasicSettings::SaveCheckBox(QAbstractButton *widget,
+		const char *section, const char *value)
 {
 	if (WidgetChanged(widget))
 		config_set_bool(main->Config(), section, value,
@@ -325,7 +372,18 @@ static const size_t numVals = sizeof(vals)/sizeof(double);
 
 void OBSBasicSettings::ResetDownscales(uint32_t cx, uint32_t cy)
 {
+	QString advRescale;
+	QString advRecRescale;
+	QString advFFRescale;
+
+	advRescale = ui->advOutRescale->lineEdit()->text();
+	advRecRescale = ui->advOutRecRescale->lineEdit()->text();
+	advFFRescale = ui->advOutFFRescale->lineEdit()->text();
+
 	ui->outputResolution->clear();
+	ui->advOutRescale->clear();
+	ui->advOutRecRescale->clear();
+	ui->advOutFFRescale->clear();
 
 	for (size_t idx = 0; idx < numVals; idx++) {
 		uint32_t downscaleCX = uint32_t(double(cx) / vals[idx]);
@@ -333,9 +391,25 @@ void OBSBasicSettings::ResetDownscales(uint32_t cx, uint32_t cy)
 
 		string res = ResString(downscaleCX, downscaleCY);
 		ui->outputResolution->addItem(res.c_str());
+		ui->advOutRescale->addItem(res.c_str());
+		ui->advOutRecRescale->addItem(res.c_str());
+		ui->advOutFFRescale->addItem(res.c_str());
 	}
 
-	ui->outputResolution->lineEdit()->setText(ResString(cx, cy).c_str());
+	string res = ResString(cx, cy);
+
+	ui->outputResolution->lineEdit()->setText(res.c_str());
+
+	if (advRescale.isEmpty())
+		advRescale = res.c_str();
+	if (advRecRescale.isEmpty())
+		advRecRescale = res.c_str();
+	if (advFFRescale.isEmpty())
+		advFFRescale = res.c_str();
+
+	ui->advOutRescale->lineEdit()->setText(advRescale);
+	ui->advOutRecRescale->lineEdit()->setText(advRecRescale);
+	ui->advOutFFRescale->lineEdit()->setText(advFFRescale);
 }
 
 void OBSBasicSettings::LoadDownscaleFilters()
@@ -449,6 +523,8 @@ void OBSBasicSettings::LoadSimpleOutputSettings()
 			"FilePath");
 	int videoBitrate = config_get_uint(main->Config(), "SimpleOutput",
 			"VBitrate");
+	int videoBufsize = config_get_uint(main->Config(), "SimpleOutput",
+			"Bufsize");
 	int audioBitrate = config_get_uint(main->Config(), "SimpleOutput",
 			"ABitrate");
 	bool reconnect = config_get_bool(main->Config(), "SimpleOutput",
@@ -461,6 +537,8 @@ void OBSBasicSettings::LoadSimpleOutputSettings()
 			"UseAdvanced");
 	bool useCBR = config_get_bool(main->Config(), "SimpleOutput",
 			"UseCBR");
+	bool useBufsize = config_get_bool(main->Config(), "SimpleOutput",
+			"UseBufsize");
 	const char *preset = config_get_string(main->Config(), "SimpleOutput",
 			"Preset");
 	const char *custom = config_get_string(main->Config(), "SimpleOutput",
@@ -468,6 +546,9 @@ void OBSBasicSettings::LoadSimpleOutputSettings()
 
 	ui->simpleOutputPath->setText(path);
 	ui->simpleOutputVBitrate->setValue(videoBitrate);
+	ui->simpleOutUseBufsize->setChecked(useBufsize);
+	ui->simpleOutputVBufsize->setValue(
+			useBufsize ? videoBufsize : videoBitrate);
 
 	SetComboByName(ui->simpleOutputABitrate,
 			std::to_string(audioBitrate).c_str());
@@ -481,11 +562,190 @@ void OBSBasicSettings::LoadSimpleOutputSettings()
 	ui->simpleOutCustom->setText(custom);
 }
 
+void OBSBasicSettings::LoadAdvOutputStreamingSettings()
+{
+	int videoBitrate = config_get_int(main->Config(), "AdvOut",
+			"VBitrate");
+	bool useBufsize = config_get_bool(main->Config(), "AdvOut",
+			"UseBufsize");
+	int videoBufsize = config_get_int(main->Config(), "AdvOut",
+			"Bufsize");
+	bool reconnect = config_get_bool(main->Config(), "AdvOut",
+			"Reconnect");
+	int retryDelay = config_get_int(main->Config(), "AdvOut",
+			"RetryDelay");
+	int maxRetries = config_get_int(main->Config(), "AdvOut",
+			"MaxRetries");
+	bool useCBR = config_get_bool(main->Config(), "AdvOut",
+			"UseCBR");
+	const char *preset = config_get_string(main->Config(), "AdvOut",
+			"Preset");
+	const char *custom = config_get_string(main->Config(), "AdvOut",
+			"EncoderSettings");
+	bool rescale = config_get_bool(main->Config(), "AdvOut",
+			"Rescale");
+	const char *rescaleRes = config_get_string(main->Config(), "AdvOut",
+			"RescaleRes");
+	bool multitrack = config_get_bool(main->Config(), "AdvOut",
+			"Multitrack");
+	int trackIndex = config_get_int(main->Config(), "AdvOut",
+			"TrackIndex");
+	int trackCount = config_get_int(main->Config(), "AdvOut",
+			"TrackCount");
+
+	ui->advOutVBitrate->setValue(videoBitrate);
+	ui->advOutUseBufsize->setChecked(useBufsize);
+	ui->advOutVBufsize->setValue(
+			useBufsize ? videoBufsize : videoBitrate);
+
+	ui->advOutReconnect->setChecked(reconnect);
+	ui->advOutRetryDelay->setValue(retryDelay);
+	ui->advOutMaxRetries->setValue(maxRetries);
+
+	ui->advOutUseCBR->setChecked(useCBR);
+	ui->advOutPreset->setCurrentText(preset);
+	ui->advOutVCfg->setText(custom);
+	ui->advOutUseRescale->setChecked(rescale);
+	ui->advOutRescale->setCurrentText(rescaleRes);
+	ui->advOutSingleTrack->setChecked(!multitrack);
+	ui->advOutAudioTrack->setValue(trackIndex);
+	ui->advOutMultitrack->setChecked(multitrack);
+	ui->advOutTrackCount->setValue(trackCount);
+}
+
+void OBSBasicSettings::LoadAdvOutputRecordingSettings()
+{
+	const char *type = config_get_string(main->Config(), "AdvOut",
+			"RecType");
+	const char *path = config_get_string(main->Config(), "AdvOut",
+			"RecFilePath");
+	bool copyStream = config_get_bool(main->Config(), "AdvOut",
+			"RecCopyStream");
+	int videoBitrate = config_get_int(main->Config(), "AdvOut",
+			"RecVBitrate");
+	bool useBufsize = config_get_bool(main->Config(), "AdvOut",
+			"RecUseBufsize");
+	int videoBufsize = config_get_int(main->Config(), "AdvOut",
+			"RecBufsize");
+	bool useCBR = config_get_bool(main->Config(), "AdvOut",
+			"RecUseCBR");
+	const char *preset = config_get_string(main->Config(), "AdvOut",
+			"RecPreset");
+	const char *custom = config_get_string(main->Config(), "AdvOut",
+			"RecEncoderSettings");
+	bool rescale = config_get_bool(main->Config(), "AdvOut",
+			"RecRescale");
+	const char *rescaleRes = config_get_string(main->Config(), "AdvOut",
+			"RecRescaleRes");
+	bool multitrack = config_get_bool(main->Config(), "AdvOut",
+			"RecMultitrack");
+	int trackIndex = config_get_int(main->Config(), "AdvOut",
+			"RecTrackIndex");
+	int trackCount = config_get_int(main->Config(), "AdvOut",
+			"RecTrackCount");
+
+	int typeIndex = (astrcmpi(type, "FFmpeg") == 0) ? 1 : 0;
+	ui->advOutRecType->setCurrentIndex(typeIndex);
+	ui->advOutRecPath->setText(path);
+	ui->advOutRecStreamEnc->setChecked(copyStream);
+	ui->advOutRecVBitrate->setValue(videoBitrate);
+	ui->advOutRecUseBufsize->setChecked(useBufsize);
+	ui->advOutRecBufsize->setValue(videoBufsize);
+	ui->advOutRecUseCBR->setChecked(useCBR);
+	ui->advOutRecPreset->setCurrentText(preset);
+	ui->advOutRecVCfg->setText(custom);
+	ui->advOutRecUseRescale->setChecked(rescale);
+	ui->advOutRecRescale->setCurrentText(rescaleRes);
+	ui->advOutRecSingleTrack->setChecked(!multitrack);
+	ui->advOutRecAudioTrack->setValue(trackIndex);
+	ui->advOutRecMultitrack->setChecked(multitrack);
+	ui->advOutRecTrackCount->setValue(trackCount);
+}
+
+void OBSBasicSettings::LoadAdvOutputFFmpegSettings()
+{
+	const char *url = config_get_string(main->Config(), "AdvOut", "FFURL");
+	int videoBitrate = config_get_int(main->Config(), "AdvOut",
+			"FFVBitrate");
+	bool rescale = config_get_bool(main->Config(), "AdvOut",
+			"FFRescale");
+	const char *rescaleRes = config_get_string(main->Config(), "AdvOut",
+			"FFRescaleRes");
+	const char *vEncoder = config_get_string(main->Config(), "AdvOut",
+			"FFVEncoder");
+	const char *vEncCustom = config_get_string(main->Config(), "AdvOut",
+			"FFVCustom");
+	int audioBitrate = config_get_int(main->Config(), "AdvOut",
+			"FFABitrate");
+	int audioTrack = config_get_int(main->Config(), "AdvOut",
+			"FFAudioTrack");
+	const char *aEncoder = config_get_string(main->Config(), "AdvOut",
+			"FFAEncoder");
+	const char *aEncCustom = config_get_string(main->Config(), "AdvOut",
+			"FFACustom");
+
+	ui->advOutFFURL->setText(url);
+	ui->advOutFFVBitrate->setValue(videoBitrate);
+	ui->advOutFFUseRescale->setChecked(rescale);
+	ui->advOutFFRescale->setCurrentText(rescaleRes);
+	ui->advOutFFVEncoder->setText(vEncoder);
+	ui->advOutFFVCfg->setText(vEncCustom);
+	ui->advOutFFABitrate->setValue(audioBitrate);
+	ui->advOutFFAudioTrack->setValue(audioTrack);
+	ui->advOutFFAEncoder->setText(aEncoder);
+	ui->advOutFFACfg->setText(aEncCustom);
+}
+
+void OBSBasicSettings::LoadAdvOutputAudioSettings()
+{
+	int track1Bitrate = config_get_uint(main->Config(), "AdvOut",
+			"Track1Bitrate");
+	int track2Bitrate = config_get_uint(main->Config(), "AdvOut",
+			"Track2Bitrate");
+	int track3Bitrate = config_get_uint(main->Config(), "AdvOut",
+			"Track3Bitrate");
+	int track4Bitrate = config_get_uint(main->Config(), "AdvOut",
+			"Track4Bitrate");
+	const char *name2 = config_get_string(main->Config(), "AdvOut",
+			"Track2Name");
+	const char *name3 = config_get_string(main->Config(), "AdvOut",
+			"Track3Name");
+	const char *name4 = config_get_string(main->Config(), "AdvOut",
+			"Track4Name");
+
+	SetComboByName(ui->advOutTrack1Bitrate,
+			std::to_string(track1Bitrate).c_str());
+	SetComboByName(ui->advOutTrack2Bitrate,
+			std::to_string(track2Bitrate).c_str());
+	SetComboByName(ui->advOutTrack3Bitrate,
+			std::to_string(track3Bitrate).c_str());
+	SetComboByName(ui->advOutTrack4Bitrate,
+			std::to_string(track4Bitrate).c_str());
+
+	ui->advOutTrack2Name->setText(name2);
+	ui->advOutTrack3Name->setText(name3);
+	ui->advOutTrack4Name->setText(name4);
+}
+
 void OBSBasicSettings::LoadOutputSettings()
 {
 	loading = true;
 
+	const char *mode = config_get_string(main->Config(), "Output", "Mode");
+
+	int modeIdx = astrcmpi(mode, "Advanced") == 0 ? 1 : 0;
+	ui->outputMode->setCurrentIndex(modeIdx);
+
 	LoadSimpleOutputSettings();
+	LoadAdvOutputStreamingSettings();
+	LoadAdvOutputRecordingSettings();
+	LoadAdvOutputFFmpegSettings();
+	LoadAdvOutputAudioSettings();
+
+	if (video_output_active(obs_get_video())) {
+		ui->outputMode->setEnabled(false);
+		ui->advOutRecType->setEnabled(false);
+	}
 
 	loading = false;
 }
@@ -643,9 +903,27 @@ void OBSBasicSettings::SaveVideoSettings()
 	main->ResetVideo();
 }
 
-/* TODO: Temporary! */
+static inline const char *OutputModeFromIdx(int idx)
+{
+	if (idx == 1)
+		return "Advanced";
+	else
+		return "Simple";
+}
+
+static inline const char *RecTypeFromIdx(int idx)
+{
+	if (idx == 1)
+		return "FFmpeg";
+	else
+		return "Standard";
+}
+
 void OBSBasicSettings::SaveOutputSettings()
 {
+	config_set_string(main->Config(), "Output", "Mode",
+			OutputModeFromIdx(ui->outputMode->currentIndex()));
+
 	SaveSpinBox(ui->simpleOutputVBitrate, "SimpleOutput", "VBitrate");
 	SaveCombo(ui->simpleOutputABitrate, "SimpleOutput", "ABitrate");
 	SaveEdit(ui->simpleOutputPath, "SimpleOutput", "FilePath");
@@ -654,8 +932,66 @@ void OBSBasicSettings::SaveOutputSettings()
 	SaveSpinBox(ui->simpleOutMaxRetries, "SimpleOutput", "MaxRetries");
 	SaveCheckBox(ui->simpleOutAdvanced, "SimpleOutput", "UseAdvanced");
 	SaveCheckBox(ui->simpleOutUseCBR, "SimpleOutput", "UseCBR");
+	SaveCheckBox(ui->simpleOutUseBufsize, "SimpleOutput", "UseBufsize");
 	SaveCombo(ui->simpleOutPreset, "SimpleOutput", "Preset");
 	SaveEdit(ui->simpleOutCustom, "SimpleOutput", "x264Settings");
+
+	if (ui->simpleOutUseBufsize->isChecked())
+		SaveSpinBox(ui->simpleOutputVBufsize, "SimpleOutput",
+				"VBufsize");
+
+	SaveSpinBox(ui->advOutVBitrate, "AdvOut", "VBitrate");
+	SaveCheckBox(ui->advOutUseBufsize, "AdvOut", "UseBufsize");
+	SaveSpinBox(ui->advOutVBufsize, "AdvOut", "Bufsize");
+	SaveCheckBox(ui->advOutReconnect, "AdvOut", "Reconnect");
+	SaveSpinBox(ui->advOutRetryDelay, "AdvOut", "RetryDelay");
+	SaveSpinBox(ui->advOutMaxRetries, "AdvOut", "MaxRetries");
+	SaveCheckBox(ui->advOutUseCBR, "AdvOut", "UseCBR");
+	SaveCombo(ui->advOutPreset, "AdvOut", "Preset");
+	SaveEdit(ui->advOutVCfg, "AdvOut", "EncoderSettings");
+	SaveCheckBox(ui->advOutUseRescale, "AdvOut", "Rescale");
+	SaveCombo(ui->advOutRescale, "AdvOut", "RescaleRes");
+	SaveCheckBox(ui->advOutMultitrack, "AdvOut", "Multitrack");
+	SaveSpinBox(ui->advOutAudioTrack, "AdvOut", "TrackIndex");
+	SaveSpinBox(ui->advOutTrackCount, "AdvOut", "TrackCount");
+
+	config_set_string(main->Config(), "AdvOut", "RecType",
+			RecTypeFromIdx(ui->advOutRecType->currentIndex()));
+
+	SaveEdit(ui->advOutRecPath, "AdvOut", "RecFilePath");
+	SaveCheckBox(ui->advOutRecStreamEnc, "AdvOut", "RecCopyStream");
+	SaveSpinBox(ui->advOutRecVBitrate, "AdvOut", "RecVBitrate");
+	SaveCheckBox(ui->advOutRecUseBufsize, "AdvOut", "RecUseBufsize");
+	SaveSpinBox(ui->advOutRecBufsize, "AdvOut", "RecBufsize");
+	SaveCheckBox(ui->advOutRecUseCBR, "AdvOut", "RecUseCBR");
+	SaveCombo(ui->advOutRecPreset, "AdvOut", "RecPreset");
+	SaveEdit(ui->advOutRecVCfg, "AdvOut", "RecEncoderSettings");
+	SaveCheckBox(ui->advOutRecUseRescale, "AdvOut", "RecRescale");
+	SaveCombo(ui->advOutRecRescale, "AdvOut", "RecRescaleRes");
+	SaveCheckBox(ui->advOutRecMultitrack, "AdvOut", "RecMultitrack");
+	SaveSpinBox(ui->advOutRecAudioTrack, "AdvOut", "RecTrackIndex");
+	SaveSpinBox(ui->advOutRecTrackCount, "AdvOut", "RecTrackCount");
+
+	SaveEdit(ui->advOutFFURL, "AdvOut", "FFURL");
+	SaveSpinBox(ui->advOutFFVBitrate, "AdvOut", "FFVBitrate");
+	SaveCheckBox(ui->advOutFFUseRescale, "AdvOut", "FFRescale");
+	SaveCombo(ui->advOutFFRescale, "AdvOut", "FFRescaleRes");
+	SaveEdit(ui->advOutFFVEncoder, "AdvOut", "FFVEncoder");
+	SaveEdit(ui->advOutFFVCfg, "AdvOut", "FFVCustom");
+	SaveSpinBox(ui->advOutFFABitrate, "AdvOut", "FFABitrate");
+	SaveSpinBox(ui->advOutFFAudioTrack, "AdvOut", "FFAudioTrack");
+	SaveEdit(ui->advOutFFAEncoder, "AdvOut", "FFAEncoder");
+	SaveEdit(ui->advOutFFACfg, "AdvOut", "FFACustom");
+
+	SaveCombo(ui->advOutTrack1Bitrate, "AdvOut", "Track1Bitrate");
+	SaveCombo(ui->advOutTrack2Bitrate, "AdvOut", "Track2Bitrate");
+	SaveCombo(ui->advOutTrack3Bitrate, "AdvOut", "Track3Bitrate");
+	SaveCombo(ui->advOutTrack4Bitrate, "AdvOut", "Track4Bitrate");
+	SaveEdit(ui->advOutTrack2Name, "AdvOut", "Track2Name");
+	SaveEdit(ui->advOutTrack3Name, "AdvOut", "Track3Name");
+	SaveEdit(ui->advOutTrack4Name, "AdvOut", "Track4Name");
+
+	main->ResetOutputs();
 }
 
 void OBSBasicSettings::SaveAudioSettings()
@@ -730,6 +1066,43 @@ void OBSBasicSettings::closeEvent(QCloseEvent *event)
 		event->ignore();
 }
 
+void OBSBasicSettings::on_simpleOutUseBufsize_toggled(bool checked)
+{
+	if (!checked)
+		ui->simpleOutputVBufsize->setValue(
+				ui->simpleOutputVBitrate->value());
+}
+
+void OBSBasicSettings::on_advOutUseBufsize_toggled(bool checked)
+{
+	if (!checked)
+		ui->advOutVBufsize->setValue(ui->advOutVBitrate->value());
+}
+
+void OBSBasicSettings::on_advOutRecUseBufsize_toggled(bool checked)
+{
+	if (!checked)
+		ui->advOutRecBufsize->setValue(ui->advOutRecVBitrate->value());
+}
+
+void OBSBasicSettings::on_simpleOutputVBitrate_valueChanged(int val)
+{
+	if (!ui->simpleOutUseBufsize->isChecked())
+		ui->simpleOutputVBufsize->setValue(val);
+}
+
+void OBSBasicSettings::on_advOutVBitrate_valueChanged(int val)
+{
+	if (!ui->advOutUseBufsize->isChecked())
+		ui->advOutVBufsize->setValue(val);
+}
+
+void OBSBasicSettings::on_advOutRecVBitrate_valueChanged(int val)
+{
+	if (!ui->advOutRecUseBufsize->isChecked())
+		ui->advOutRecBufsize->setValue(val);
+}
+
 void OBSBasicSettings::on_listWidget_itemSelectionChanged()
 {
 	int row = ui->listWidget->currentRow();
@@ -778,7 +1151,7 @@ void OBSBasicSettings::on_streamType_currentIndexChanged(int idx)
 void OBSBasicSettings::on_simpleOutputBrowse_clicked()
 {
 	QString dir = QFileDialog::getExistingDirectory(this,
-			QTStr("OpenDirectory"),
+			QTStr("Basic.Settings.Output.SelectDirectory"),
 			ui->simpleOutputPath->text(),
 			QFileDialog::ShowDirsOnly |
 			QFileDialog::DontResolveSymlinks);
@@ -786,6 +1159,31 @@ void OBSBasicSettings::on_simpleOutputBrowse_clicked()
 		return;
 
 	ui->simpleOutputPath->setText(dir);
+}
+
+void OBSBasicSettings::on_advOutRecPathBrowse_clicked()
+{
+	QString dir = QFileDialog::getExistingDirectory(this,
+			QTStr("Basic.Settings.Output.SelectDirectory"),
+			ui->advOutRecPath->text(),
+			QFileDialog::ShowDirsOnly |
+			QFileDialog::DontResolveSymlinks);
+	if (dir.isEmpty())
+		return;
+
+	ui->advOutRecPath->setText(dir);
+}
+
+void OBSBasicSettings::on_advOutFFPathBrowse_clicked()
+{
+	QString file = QFileDialog::getSaveFileName(this,
+			QTStr("Basic.Settings.Output.SelectFile"),
+			ui->simpleOutputPath->text(),
+			QTStr("Basic.Settings.Output.Adv.FFmpeg.SaveFilter"));
+	if (file.isEmpty())
+		return;
+
+	ui->advOutFFURL->setText(file);
 }
 
 static inline bool StreamExists(const char *name)
